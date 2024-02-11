@@ -1,0 +1,115 @@
+import time
+import math
+import pandas as pd
+import sys
+import threading
+import matplotlib.pyplot as plt
+nth_term_first_input = [5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35, 37, 40, 42, 45]
+nth_term_second_input = [501, 631, 794, 1000, 1259, 1585, 1995, 2512, 3162, 3981, 5012, 6310, 7943, 10000, 12589, 15849]
+time_per_iteration = []
+sys.setrecursionlimit(5000)
+def fibonacci_memoization(n, memo={}):
+    if n in memo:
+        return memo[n]
+    if n <= 1:
+        return n
+    memo[n] = fibonacci_memoization(n - 1, memo) + fibonacci_memoization(n - 2, memo)
+    return memo[n]
+
+def fibonacci_iterative(n):
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+
+    a = 0
+    b = 1
+
+    for _ in range(2, n + 1):
+        temp = a + b
+        a = b
+        b = temp
+
+    return b
+
+def fibonacci_matrix(n):
+    def multiply(matrix1, matrix2):
+        a = matrix1[0][0] * matrix2[0][0] + matrix1[0][1] * matrix2[1][0]
+        b = matrix1[0][0] * matrix2[0][1] + matrix1[0][1] * matrix2[1][1]
+        c = matrix1[1][0] * matrix2[0][0] + matrix1[1][1] * matrix2[1][0]
+        d = matrix1[1][0] * matrix2[0][1] + matrix1[1][1] * matrix2[1][1]
+        return [[a, b], [c, d]]
+
+    def power(matrix, n):
+        result = [[1, 0], [0, 1]]
+        while n > 0:
+            if n % 2 == 1:
+                result = multiply(result, matrix)
+            matrix = multiply(matrix, matrix)
+            n //= 2
+        return result
+
+    if n == 0:
+        return 0
+    matrix = [[1, 1], [1, 0]]
+    result = power(matrix, n - 1)
+    return result[0][0]
+
+def fibonacci_binet(n):
+    sqrt_5 = math.sqrt(5)
+    phi = (1 + sqrt_5) / 2
+    return round((phi**n - (-1/phi)**n) / sqrt_5)
+
+def fibonacci_bottom_up(n):
+    if n <= 1:
+        return n
+    fib = [0] * (n + 1)
+    fib[1] = 1
+    for i in range(2, n + 1):
+        fib[i] = fib[i - 1] + fib[i - 2]
+    return fib[n]
+
+def recursiveAproach(n):
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return recursiveAproach(n-1) + recursiveAproach(n-2)
+
+def iterate(alg_func_name,type,alg_name):
+    for i in type:
+        start_time = time.time()
+        alg_func_name(i)
+        time_per_iteration.append(time.time() - start_time)
+
+    df = pd.DataFrame(time_per_iteration, index=type)
+    print(df)
+    plt.plot(type,time_per_iteration)
+    plt.title(alg_name+" method")
+    plt.xlabel("Term")
+    plt.ylabel("Time")
+    plt.show()
+
+
+print("Choose the algorithm: \n 1-Bottom up \n 2-Iterative \n 3-Recursive \n 4-Binet \n 5-Matrix \n 6-Memoization")
+name = int(input("Insert number:"))
+
+match name:
+    case 1:
+        iterate(fibonacci_bottom_up,nth_term_second_input,"Bottom up")
+
+    case 2:
+        iterate(fibonacci_iterative,nth_term_second_input,"Iterative")
+
+    case 3:
+        iterate(recursiveAproach,nth_term_first_input,"Recursive")
+
+    case 4:
+        iterate(fibonacci_binet,nth_term_first_input,"Binet")
+
+    case 5:
+        iterate(fibonacci_matrix,nth_term_second_input,"Matrix")
+
+    case 6:
+        iterate(fibonacci_memoization,nth_term_second_input,"Memoization")
